@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.atencion;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Atenciones", description = "Programación y ejecución de entregas (conductor + cisterna) asociadas a un pedido.")
 @RequestMapping("/api/v1/atenciones")
 @RequiredArgsConstructor
 public class AtencionRestController {

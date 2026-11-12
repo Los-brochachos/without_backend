@@ -27,4 +27,7 @@ public interface AlertaRepository
             Integer idAtencion,
             EstadoAlerta estado
     );
+
+    /** Alertas de las atenciones asignadas a un conductor (por el correo de su usuario), más recientes primero. */
+    List<Alerta> findByAtencionConductorTrabajadorUsuarioCorreoOrderByFechaHoraDesc(String correo);
 }

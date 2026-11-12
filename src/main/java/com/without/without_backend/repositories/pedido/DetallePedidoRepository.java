@@ -17,6 +17,8 @@ public interface DetallePedidoRepository extends JpaRepository<DetallePedido, In
                 Integer idPedido,
                 Estado estado);
 
+        long countByPedidoIdPedidoAndEstado(Integer idPedido, Estado estado);
+
         boolean existsByPedidoIdPedidoAndProductoIdProductoAndEstado(
                 Integer idPedido,
                 Integer idProducto,

@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.usuario;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Usuarios", description = "Cuentas de acceso al sistema y datos del usuario autenticado.")
 @RequestMapping("/api/v1/usuarios")
 @RequiredArgsConstructor
 public class UsuarioRestController {

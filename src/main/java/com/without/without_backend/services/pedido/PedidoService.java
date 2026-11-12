@@ -7,9 +7,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.without.without_backend.dto.comun.PaginaResponse;
 import com.without.without_backend.dto.pedido.pedido.PedidoRequest;
 import com.without.without_backend.dto.pedido.pedido.PedidoResponse;
 import com.without.without_backend.dto.pedido.seguimientopedido.CambioEstadoPedidoRequest;
@@ -55,6 +60,50 @@ public class PedidoService {
                         .map(pedidoMapper::toResponse)
                         .toList();
         }
+
+        // ===================== PAGINACIÓN =====================
+        public static final int TAMANIO_MAXIMO_PAGINA = 50;
+
+        /** ADMIN / ANALISTA / PROGRAMADOR: todos los pedidos, más recientes primero. */
+        @Transactional(readOnly = true)
+        public PaginaResponse<PedidoResponse> listarPaginado(int pagina, int tamanio, EstadoPedido estado) {
+                Pageable pageable = crearPaginacion(pagina, tamanio);
+                Page<Pedido> resultado = estado == null
+                        ? pedidoRepository.findAll(pageable)
+                        : pedidoRepository.findByEstado(estado, pageable);
+                return PaginaResponse.de(resultado.map(pedidoMapper::toResponse));
+        }
+
+        /** CLIENTE: solo sus propios pedidos; el correo sale del JWT, nunca del request. */
+        @Transactional(readOnly = true)
+        public PaginaResponse<PedidoResponse> listarMisPedidosPaginado(
+                        String correo, int pagina, int tamanio, EstadoPedido estado) {
+                Pageable pageable = crearPaginacion(pagina, tamanio);
+                Integer idCliente = obtenerClientePorCorreo(correo).getIdCliente();
+                Page<Pedido> resultado = estado == null
+                        ? pedidoRepository.findByClienteIdCliente(idCliente, pageable)
+                        : pedidoRepository.findByClienteIdClienteAndEstado(idCliente, estado, pageable);
+                return PaginaResponse.de(resultado.map(pedidoMapper::toResponse));
+        }
+
+        private Pageable crearPaginacion(int pagina, int tamanio) {
+                if (pagina < 0) {
+                        throw new IllegalArgumentException("El número de página no puede ser negativo");
+                }
+                if (tamanio < 1 || tamanio > TAMANIO_MAXIMO_PAGINA) {
+                        throw new IllegalArgumentException(
+                                "El tamaño de página debe estar entre 1 y " + TAMANIO_MAXIMO_PAGINA);
+                }
+                return PageRequest.of(pagina, tamanio, Sort.by(Sort.Direction.DESC, "idPedido"));
+        }
+
+        private Cliente obtenerClientePorCorreo(String correo) {
+                Usuario usuario = usuarioRepository.findByCorreo(correo)
+                        .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
+                return clienteRepository.findByUsuario(usuario)
+                        .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
+        }
+        // ======================================================
 
         public PedidoResponse buscarPorId(Integer id) {
 

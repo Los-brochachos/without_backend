@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.pedido;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Detalle de pedido", description = "Productos y cantidades de cada pedido.")
 @RequestMapping("/api/v1/pedidos/{idPedido}/detalles")
 @RequiredArgsConstructor
 public class DetallePedidoRestController {

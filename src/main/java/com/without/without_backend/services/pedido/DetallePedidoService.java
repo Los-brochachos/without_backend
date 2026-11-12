@@ -259,6 +259,7 @@ public class DetallePedidoService {
                 }
 
                 DetallePedido detalle = detallePedidoMapper.toEntity(request,pedido,producto);
+                detalle.setEstado(Estado.ACTIVO);
                 DetallePedido guardado = detallePedidoRepository.save(detalle);
 
                 return detallePedidoMapper.toResponse(guardado);
@@ -283,6 +284,13 @@ public class DetallePedidoService {
                 DetallePedido detalle = obtenerDetalle(idPedido,idDetalle);
 
                 validarDetalleActivo(detalle);
+
+                // Un pedido no puede quedar vacío: para eso existe la cancelación del pedido.
+                if (detallePedidoRepository.countByPedidoIdPedidoAndEstado(idPedido, Estado.ACTIVO) <= 1) {
+                        throw new IllegalArgumentException(
+                                "El pedido debe conservar al menos un producto. Si ya no lo necesitas, cancela el pedido");
+                }
+
                 detalle.setEstado(Estado.INACTIVO);
                 
                 DetallePedido actualizado = detallePedidoRepository.save(detalle);

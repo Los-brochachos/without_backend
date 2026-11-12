@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.pedido;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RestController
+@Tag(name = "Seguimiento de pedido", description = "Historial de estados de un pedido.")
 @RequestMapping("/api/v1/pedidos/{idPedido}/seguimiento")
 @RequiredArgsConstructor
 public class SeguimientoPedidoRestController {

@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.pedido;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Productos", description = "Catálogo de gases industriales.")
 @RequestMapping("/api/v1/productos")
 @RequiredArgsConstructor
 public class ProductoRestController {

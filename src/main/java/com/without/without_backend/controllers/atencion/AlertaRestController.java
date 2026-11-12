@@ -1,5 +1,8 @@
 package com.without.without_backend.controllers.atencion;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Alertas", description = "Incidencias reportadas por conductores durante una atención.")
 @RequestMapping("/api/v1/alertas")
 @RequiredArgsConstructor
 public class AlertaRestController {
@@ -34,12 +38,25 @@ public class AlertaRestController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
+    @Operation(summary = "Mis alertas (CONDUCTOR)",
+        description = "Solo las alertas de las atenciones asignadas al conductor autenticado (correo tomado del JWT).")
+    @GetMapping("/mis-alertas")
+    public ResponseEntity<List<AlertaResponse>> listarMisAlertas(
+            @Parameter(hidden = true) Authentication authentication) {
+        return ResponseEntity.ok(service.listarMisAlertas(authentication.getName()));
+    }
+
+    @Operation(summary = "Alertas de una atención",
+        description = "ADMIN / ANALISTA / PROGRAMADOR: cualquier atención. CONDUCTOR: solo atenciones asignadas a él (si no, 404).")
     @GetMapping("/atencion/{idAtencion}")
     public ResponseEntity<List<AlertaResponse>> listarPorAtencion(
-            @PathVariable Integer idAtencion) {
-        return ResponseEntity.ok(
-                service.listarPorAtencion(idAtencion)
-        );
+            @PathVariable Integer idAtencion,
+            @Parameter(hidden = true) Authentication authentication) {
+        boolean esConductor = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_CONDUCTOR".equals(a.getAuthority()));
+        return ResponseEntity.ok(esConductor
+                ? service.listarPorAtencionDelConductor(idAtencion, authentication.getName())
+                : service.listarPorAtencion(idAtencion));
     }
 
     @GetMapping("/estado")

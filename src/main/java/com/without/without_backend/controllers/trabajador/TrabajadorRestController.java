@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.trabajador;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Trabajadores", description = "Gestión del personal y datos del trabajador autenticado.")
 @RequestMapping("/api/v1/trabajadores")
 @RequiredArgsConstructor
 public class TrabajadorRestController {

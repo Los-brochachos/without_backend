@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -59,6 +60,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 response,
                 HttpStatus.BAD_REQUEST
         );
+    }
+
+    /**
+     * Respaldo de las restricciones únicas de la BD (RUC, correo, DNI, placa...).
+     * Cubre la carrera en que dos solicitudes iguales pasan la validación a la vez.
+     * No se expone el mensaje SQL.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", 409);
+        response.put("error", "Conflict");
+        response.put("message", "El registro entra en conflicto con datos existentes (valor duplicado)");
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(RuntimeException.class)

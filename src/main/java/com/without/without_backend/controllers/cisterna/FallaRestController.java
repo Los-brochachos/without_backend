@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.cisterna;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Fallas", description = "Fallas de cisternas registradas por técnicos.")
 @RequestMapping("/api/v1/fallas")
 @RequiredArgsConstructor
 public class FallaRestController {

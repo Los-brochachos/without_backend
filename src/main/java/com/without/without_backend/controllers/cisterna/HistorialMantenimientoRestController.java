@@ -1,5 +1,6 @@
 package com.without.without_backend.controllers.cisterna;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@Tag(name = "Historial de mantenimiento", description = "Mantenimientos realizados a las cisternas.")
 @RequestMapping("/api/v1/historial")
 @RequiredArgsConstructor
 public class HistorialMantenimientoRestController {

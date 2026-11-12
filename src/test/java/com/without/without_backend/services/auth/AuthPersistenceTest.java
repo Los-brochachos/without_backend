@@ -8,6 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import com.without.without_backend.support.TestDatabaseInitializer;
 import com.without.without_backend.entities.usuario.Usuario;
 import com.without.without_backend.repositories.usuario.UsuarioRepository;
 import com.without.without_backend.services.AuthService;
@@ -16,8 +19,10 @@ import com.without.without_backend.utils.Estado;
 import com.without.without_backend.utils.RolesEnum;
 import com.without.without_backend.utils.auth.AuthRequest;
 
-/** Usa la base configurada; todos los registros creados se revierten al terminar. */
-@SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.show-sql=false"})
+/** Usa exclusivamente withoutdb_test; las tablas son temporales y los datos se revierten. */
+@SpringBootTest
+@ActiveProfiles("test")
+@ContextConfiguration(initializers = TestDatabaseInitializer.class)
 @Transactional
 class AuthPersistenceTest {
     @Autowired private UsuarioRepository users;

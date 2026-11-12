@@ -115,6 +115,36 @@ public class AlertaService {
                 .toList();
     }
 
+    // ===================== CONDUCTOR: solo lo suyo =====================
+
+    /** CONDUCTOR: alertas de sus propias atenciones (no las de otros conductores). */
+    @Transactional
+    public List<AlertaResponse> listarMisAlertas(String correo) {
+        return repository
+                .findByAtencionConductorTrabajadorUsuarioCorreoOrderByFechaHoraDesc(correo)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
+    /**
+     * CONDUCTOR: alertas de una atención solo si está asignada a él.
+     * Si no lo está responde 404 (igual que si no existiera) para no revelar atenciones ajenas.
+     */
+    @Transactional
+    public List<AlertaResponse> listarPorAtencionDelConductor(Integer idAtencion, String correo) {
+        Atencion atencion = atencionRepository.findById(idAtencion)
+                .orElseThrow(() -> new NoSuchElementException(ATENCION_NO_DISPONIBLE));
+        Conductor conductor = conductorRepository.findByTrabajadorUsuarioCorreo(correo)
+                .orElseThrow(() -> new NoSuchElementException(ATENCION_NO_DISPONIBLE));
+        if (!atencion.getConductor().getIdTrabajador().equals(conductor.getIdTrabajador())) {
+            throw new NoSuchElementException(ATENCION_NO_DISPONIBLE);
+        }
+        return listarPorAtencion(idAtencion);
+    }
+
+    static final String ATENCION_NO_DISPONIBLE = "La atención no existe o no está asignada a tu cuenta";
+
     @Transactional
     public List<AlertaResponse> listarPorEstado(
             EstadoAlerta estado

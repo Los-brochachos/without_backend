@@ -1,5 +1,9 @@
 package com.without.without_backend.controllers.cliente;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -27,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RestController
+@Tag(name = "Clientes", description = "Registro público de clientes y gestión de empresas cliente.")
 @RequestMapping("/api/v1/clientes")
 @RequiredArgsConstructor
 public class ClienteRestController {
@@ -92,6 +97,10 @@ public class ClienteRestController {
     }
     
 
+    @Operation(summary = "Registrar cliente (público)",
+        description = "Crea la empresa cliente y su usuario con rol CLIENTE. No requiere token.")
+    @SecurityRequirements
+    @ApiResponse(responseCode = "400", description = "Datos inválidos, RUC o correo ya registrados")
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> crearCliente(
             @Valid @RequestBody ClienteCreateRequest request) {

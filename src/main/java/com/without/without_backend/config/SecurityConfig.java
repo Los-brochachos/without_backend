@@ -22,6 +22,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.without.without_backend.components.JwtAuthFilter;
 
+import jakarta.servlet.DispatcherType;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -55,8 +57,18 @@ public class SecurityConfig {
                     response.setStatus(401);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"message\":\"Autenticacion requerida\"}");
+                })
+                // Responder 403 directamente. El handler por defecto hace sendError(403) y Tomcat
+                // reenvía a /error, donde el JWT ya no se evalúa: el cliente recibía 401 en vez de 403.
+                .accessDeniedHandler((request, response, exception) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\":\"No tienes permiso para realizar esta accion\"}");
                 }))
             .authorizeHttpRequests(auth -> auth
+
+                // Reenvíos internos de error (sendError) no deben volver a exigir autenticación.
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/cuenta/clave").authenticated()
 
@@ -66,6 +78,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/logout").permitAll()
                 .requestMatchers("/prueba/**").permitAll()
+
+                // DOCUMENTACION SWAGGER / OPENAPI (solo lectura; se desactiva en prod)
+                .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**")
+                    .permitAll()
 
 
                 // ========================================================
@@ -278,12 +294,22 @@ public class SecurityConfig {
 
 
                 // =========================================================
-                // PEDIDOS 
+                // PEDIDOS
+                // Paginados (deben ir antes de los patrones /* para que no los capturen)
+                .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/mis-pedidos/paginado")
+                    .hasRole("CLIENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/paginado")
+                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR")
+
                 // CLIENTE: consultar sus propios pedidos
                 .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/mis-pedidos")
                     .hasRole("CLIENTE")
 
                 .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/mis-pedidos/*")
+                    .hasRole("CLIENTE")
+
+                // CLIENTE: cancelar su propio pedido (antes caía en anyRequest().authenticated())
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/pedidos/mis-pedidos/*/cancelar")
                     .hasRole("CLIENTE")
 
                 // CLIENTE: registrar un pedido
@@ -497,20 +523,25 @@ public class SecurityConfig {
 
                 // =========================================================
                 // ALERTAS
-                .requestMatchers(HttpMethod.GET, "/api/v1/alertas")
-                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR", "CONDUCTOR")
+                // CONDUCTOR: solo las alertas de SUS atenciones (antes veía las de todos los conductores)
+                .requestMatchers(HttpMethod.GET, "/api/v1/alertas/mis-alertas")
+                    .hasRole("CONDUCTOR")
 
+                .requestMatchers(HttpMethod.GET, "/api/v1/alertas")
+                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR")
+
+                // CONDUCTOR permitido, pero el servicio verifica que la atención sea suya (404 si no)
                 .requestMatchers(HttpMethod.GET, "/api/v1/alertas/atencion/*")
                     .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR", "CONDUCTOR")
 
                 .requestMatchers(HttpMethod.GET, "/api/v1/alertas/estado")
-                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR", "CONDUCTOR")
+                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR")
 
                 .requestMatchers(HttpMethod.GET, "/api/v1/alertas/tipo")
-                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR", "CONDUCTOR")
+                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR")
 
                 .requestMatchers(HttpMethod.GET, "/api/v1/alertas/*")
-                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR", "CONDUCTOR")
+                    .hasAnyRole("ADMIN", "ANALISTA", "PROGRAMADOR")
 
                 .requestMatchers(HttpMethod.POST, "/api/v1/alertas")
                     .hasRole("CONDUCTOR")

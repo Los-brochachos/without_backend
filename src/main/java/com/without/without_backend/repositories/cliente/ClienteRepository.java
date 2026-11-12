@@ -20,4 +20,9 @@ public interface ClienteRepository extends JpaRepository<Cliente,Integer>{
             Integer idCliente,
             Estado estado
     );
+
+    // El RUC identifica a la empresa: no puede repetirse entre clientes.
+    boolean existsByRuc(String ruc);
+
+    boolean existsByRucAndIdClienteNot(String ruc, Integer idCliente);
 } 

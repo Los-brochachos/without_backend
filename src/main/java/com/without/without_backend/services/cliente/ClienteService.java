@@ -30,6 +30,19 @@ public class ClienteService {
     private final ClienteMapper clienteMapper;
     private final PasswordEncoder passwordEncoder;
 
+    static final String RUC_DUPLICADO = "El RUC ya está registrado por otra empresa";
+
+    /** Cambia el RUC solo si es distinto y no pertenece a otro cliente. */
+    private void actualizarRuc(Cliente cliente, String nuevoRuc) {
+        if (nuevoRuc == null || nuevoRuc.equals(cliente.getRuc())) {
+            return;
+        }
+        if (clienteRepository.existsByRucAndIdClienteNot(nuevoRuc, cliente.getIdCliente())) {
+            throw new IllegalArgumentException(RUC_DUPLICADO);
+        }
+        cliente.setRuc(nuevoRuc);
+    }
+
     public List<ClienteResponse> listarClientesTodos() {
         return clienteRepository.findAll()
                 .stream()
@@ -73,6 +86,11 @@ public class ClienteService {
                     "El correo ya está registrado");
         }
 
+        // 1b. Verificar que el RUC no pertenezca a otra empresa cliente
+        if (clienteRepository.existsByRuc(request.ruc())) {
+            throw new IllegalArgumentException(RUC_DUPLICADO);
+        }
+
         // 2. Crear Usuario
         Usuario usuario = Usuario.builder()
                 .correo(request.correo())
@@ -109,10 +127,8 @@ public class ClienteService {
         
         Usuario usuario = cliente.getUsuario();
 
-        // 2. Actualizar RUC
-        if (request.ruc() != null) {
-            cliente.setRuc(request.ruc());
-        }
+        // 2. Actualizar RUC (sin chocar con el de otra empresa)
+        actualizarRuc(cliente, request.ruc());
 
         // 3. Actualizar Razón Social
         if (request.razonSocial() != null) {
@@ -205,9 +221,7 @@ public class ClienteService {
                 .orElseThrow(() ->
                         new NoSuchElementException("Cliente no encontrado"));
 
-        if (request.ruc() != null) {
-            cliente.setRuc(request.ruc());
-        }
+        actualizarRuc(cliente, request.ruc());
 
         if (request.razonSocial() != null) {
             cliente.setRazonSocial(request.razonSocial());
