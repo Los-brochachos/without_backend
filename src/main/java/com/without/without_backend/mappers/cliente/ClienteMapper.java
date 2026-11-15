@@ -32,7 +32,9 @@ public class ClienteMapper {
                 entity.getUsuario().getCorreo(),
                 entity.getUsuario().getRol(),
                 entity.getFechaCreacion(),
-                entity.getFechaActualizacion()
+                entity.getFechaActualizacion(),
+                entity.getUsuario().getIdUsuario(),
+                entity.getUsuario().getEstado()
         );
     }
 }

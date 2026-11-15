@@ -1,5 +1,7 @@
 package com.without.without_backend.services.trabajador;
 
+import com.without.without_backend.utils.PerfilSuperadmin;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -41,6 +43,7 @@ public class ConductorService {
 
         return conductorRepository.findAll()
                 .stream()
+                .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getTrabajador().getUsuario()))
                 .map(conductorMapper::toResponse)
                 .toList();
     }
@@ -55,6 +58,7 @@ public class ConductorService {
         return conductorRepository
                 .findByTrabajadorEstado(Estado.ACTIVO)
                 .stream()
+                .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getTrabajador().getUsuario()))
                 .map(conductorMapper::toResponse)
                 .toList();
     }
@@ -198,6 +202,7 @@ public class ConductorService {
                                 "Conductor no encontrado"
                         )
                 );
+        PerfilSuperadmin.proteger(conductor.getTrabajador().getUsuario());
 
         Trabajador trabajador = conductor.getTrabajador();
         Usuario usuario = trabajador.getUsuario();
@@ -324,6 +329,7 @@ public class ConductorService {
                                 "Conductor no encontrado"
                         )
                 );
+        PerfilSuperadmin.proteger(conductor.getTrabajador().getUsuario());
 
         Trabajador trabajador = conductor.getTrabajador();
         Usuario usuario = trabajador.getUsuario();

@@ -6,5 +6,7 @@ public enum RolesEnum {
     CONDUCTOR,
     TECNICO,
     CLIENTE,
-    ANALISTA
+    ANALISTA,
+    /** Cuenta única con acceso total (jerarquía de roles en SecurityConfig). No se crea por la API. */
+    SUPERADMIN
 }

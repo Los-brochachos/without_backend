@@ -17,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -100,9 +102,11 @@ public class SecurityConfig {
                     .hasAnyRole("ADMIN", "ANALISTA")
                 // Actualizar usuario por ID
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/usuarios/*")
-                    .hasRole("ADMIN")
-                // Desactivar usuario
+                    .hasRole("SUPERADMIN") // cambio de correo de emergencia: cierra las sesiones de esa cuenta
+                // Desactivar / reactivar usuario
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/usuarios/*")
+                    .hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/usuarios/*/activar")
                     .hasRole("ADMIN")
                 // =========================================================
                 
@@ -568,6 +572,19 @@ public class SecurityConfig {
         repository.setCookiePath("/auth");
         repository.setCookieCustomizer(cookie -> cookie.httpOnly(true).secure(cookieSecure).sameSite("Strict"));
         return repository;
+    }
+
+    /**
+     * SUPERADMIN hereda todos los roles: cada regla hasRole/hasAnyRole lo acepta sin repetirlo en ellas.
+     * Spring Security aplica este bean automáticamente a authorizeHttpRequests.
+     * Las operaciones que exigen un perfil propio (p. ej. reportar una falla requiere ser técnico registrado)
+     * siguen respondiendo 404 si la cuenta no tiene ese perfil.
+     */
+    @Bean
+    static RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+            .role("SUPERADMIN").implies("ADMIN", "ANALISTA", "PROGRAMADOR", "CONDUCTOR", "TECNICO", "CLIENTE")
+            .build();
     }
 
     @Bean

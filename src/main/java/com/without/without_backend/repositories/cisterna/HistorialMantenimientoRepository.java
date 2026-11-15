@@ -49,4 +49,7 @@ public interface HistorialMantenimientoRepository extends JpaRepository<Historia
     List<HistorialMantenimiento> findByFalla_Cisterna_Nombre(
             String nombre
     );
+
+    /** Indica si la falla tiene al menos un mantenimiento registrado (requisito para resolverla). */
+    boolean existsByFalla_IdFalla(Integer idFalla);
 }

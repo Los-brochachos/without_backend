@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.without.without_backend.dto.usuario.UsuarioResponse;
 import com.without.without_backend.dto.usuario.UsuarioUpdateRequest;
+import com.without.without_backend.services.usuario.SeguridadCuentaService;
+import com.without.without_backend.services.usuario.EstadoCuentaService;
 import com.without.without_backend.services.usuario.UsuarioService;
+import com.without.without_backend.dto.usuario.CambiarCorreoRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 public class UsuarioRestController {
 
     private final UsuarioService service;
+    private final SeguridadCuentaService seguridadCuenta;
+    private final EstadoCuentaService estadoCuenta;
 
     @GetMapping
     public ResponseEntity<List<UsuarioResponse>> findAll() {
@@ -49,16 +54,23 @@ public class UsuarioRestController {
         );
     }
 
+    /**
+     * El usuario autenticado cambia su correo de acceso confirmando con su contraseña actual.
+     * El correo es el «subject» del JWT: el token vigente deja de servir y el cliente debe renovarlo (refresh-token).
+     */
     @PatchMapping ("/me")
     public ResponseEntity<UsuarioResponse> actualizarMe(
             Authentication authentication,
-            @Valid @RequestBody UsuarioUpdateRequest request) {
+            @Valid @RequestBody CambiarCorreoRequest request) {
 
-        return ResponseEntity.ok(
-                service.actualizarMe(authentication.getName(), request)
-        );
+        String nuevo = seguridadCuenta.cambiarCorreo(authentication.getName(), request);
+        return ResponseEntity.ok(service.me(nuevo));
     }
 
+    /**
+     * Cambio de EMERGENCIA del correo de otra cuenta (solo SUPERADMIN, ver SecurityConfig), p. ej. si un cliente
+     * perdió el acceso a su correo. Cierra las sesiones abiertas de esa cuenta: deberá ingresar con el correo nuevo.
+     */
     @PatchMapping("/{id}")
     public ResponseEntity<UsuarioResponse> actualizar(
             @PathVariable Integer id,
@@ -69,11 +81,24 @@ public class UsuarioRestController {
         );
     }
 
+    /** Desactiva la cuenta (ADMIN). Si es de un trabajador aplica las reglas de Trabajadores; cierra sus sesiones. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desactivar(
-            @PathVariable Integer id) {
+            @PathVariable Integer id,
+            Authentication authentication) {
 
-        service.desactivar(id);
+        estadoCuenta.cambiarEstado(id, false, authentication.getName());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Reactiva una cuenta desactivada (ADMIN). */
+    @PatchMapping("/{id}/activar")
+    public ResponseEntity<Void> activar(
+            @PathVariable Integer id,
+            Authentication authentication) {
+
+        estadoCuenta.cambiarEstado(id, true, authentication.getName());
 
         return ResponseEntity.noContent().build();
     }

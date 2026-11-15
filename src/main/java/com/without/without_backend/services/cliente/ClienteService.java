@@ -1,5 +1,7 @@
 package com.without.without_backend.services.cliente;
 
+import com.without.without_backend.utils.PerfilSuperadmin;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,6 +31,7 @@ public class ClienteService {
     private final UsuarioRepository usuarioRepository;
     private final ClienteMapper clienteMapper;
     private final PasswordEncoder passwordEncoder;
+    private final com.without.without_backend.repositories.TokenRepository tokenRepository;
 
     static final String RUC_DUPLICADO = "El RUC ya está registrado por otra empresa";
 
@@ -46,6 +49,7 @@ public class ClienteService {
     public List<ClienteResponse> listarClientesTodos() {
         return clienteRepository.findAll()
                 .stream()
+                .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getUsuario()))
                 .map(clienteMapper::toDto)
                 .toList();
     }
@@ -53,6 +57,7 @@ public class ClienteService {
     public List<ClienteResponse> listarActivos() {
         return clienteRepository.findByUsuarioEstado(Estado.ACTIVO)
                 .stream()
+                .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getUsuario()))
                 .map(clienteMapper::toDto)
                 .toList();
     }
@@ -124,6 +129,7 @@ public class ClienteService {
         // 1. Buscar Cliente
         Cliente cliente = clienteRepository.findById(id)
                         .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
+        PerfilSuperadmin.proteger(cliente.getUsuario());
         
         Usuario usuario = cliente.getUsuario();
 
@@ -145,19 +151,13 @@ public class ClienteService {
             cliente.setTelefono(request.telefono());
         }
 
-        // 6. Actualizar Correo
+        // 6. El correo de acceso NO se cambia aquí: es el usuario del JWT. Lo cambia el propio cliente (Seguridad,
+        //    con su contraseña) o el SUPERADMIN en un cambio de emergencia (PATCH /usuarios/{id}, cierra sus sesiones).
         if (request.correo() != null
-                && !usuario.getCorreo().equals(request.correo())) {
+                && !usuario.getCorreo().equalsIgnoreCase(request.correo())) {
 
-            if (usuarioRepository
-                    .findByCorreo(request.correo())
-                    .isPresent()) {
-
-                throw new IllegalArgumentException(
-                        "El correo ya está registrado");
-            }
-
-            usuario.setCorreo(request.correo());
+            throw new IllegalArgumentException(
+                    "El correo de acceso no se cambia desde aquí: lo cambia el propio cliente en Seguridad o el superadministrador en Usuarios");
         }
 
         // 7. Actualizar contraseña solo si fue enviada
@@ -186,12 +186,14 @@ public class ClienteService {
                 .orElseThrow(() ->
                         new NoSuchElementException(
                                 "Cliente no encontrado"));
+        PerfilSuperadmin.proteger(cliente.getUsuario());
 
         Usuario usuario = cliente.getUsuario();
 
-        // Desactivación lógica
+        // Desactivación lógica y cierre de sus sesiones (igual que desactivar desde Usuarios)
         usuario.setEstado(Estado.INACTIVO);
         usuarioRepository.save(usuario);
+        tokenRepository.findByUser(usuario).ifPresent(tokenRepository::deleteAll);
     }
 
     public ClienteResponse me(String correo) {

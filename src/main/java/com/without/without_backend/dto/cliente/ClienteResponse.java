@@ -3,6 +3,7 @@ package com.without.without_backend.dto.cliente;
 import java.time.LocalDateTime;
 
 import com.without.without_backend.utils.RolesEnum;
+import com.without.without_backend.utils.Estado;
 
 public record ClienteResponse(
 
@@ -22,6 +23,11 @@ public record ClienteResponse(
 
     LocalDateTime fechaCreacion,
 
-    LocalDateTime fechaActualizacion
+    LocalDateTime fechaActualizacion,
 
+    /** Cuenta de acceso del cliente (para activar/desactivar desde Usuarios). */
+    Integer idUsuario,
+
+    /** ACTIVO / INACTIVO: estado de la cuenta del cliente (DELETE /clientes/{id} la desactiva). */
+    Estado estado
 ) {}

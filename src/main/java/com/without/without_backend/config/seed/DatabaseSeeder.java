@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 /** Datos ficticios para una base de desarrollo vacia. */
 @Component
 @Profile("dev")
+@Order(1)
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseSeeder implements CommandLineRunner {
@@ -55,6 +57,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Lima"));
         LocalDate hoy = ahora.toLocalDate();
         String password = passwordEncoder.encode("without1234*");
+        // Cuenta única de acceso total (sin perfil de trabajador). SuperAdminInicializador la garantiza también en bases con datos.
+        usuario(SuperAdminInicializador.CUENTA, RolesEnum.SUPERADMIN, password);
         trabajador("admin", RolesEnum.ADMIN, "Andrea", "Torres", 1, password, hoy);
         trabajador("analista", RolesEnum.ANALISTA, "Luis", "Ramos", 2, password, hoy);
         List<Conductor> conductores = new ArrayList<>();

@@ -1,5 +1,7 @@
 package com.without.without_backend.services.trabajador;
 
+import com.without.without_backend.utils.PerfilSuperadmin;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -35,6 +37,7 @@ public class ProgramadorService {
         public List<ProgramadorResponse> listarTodos() {
                 return programadorRepository.findAll()
                         .stream()
+                        .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getTrabajador().getUsuario()))
                         .map(programadorMapper::toResponse)
                         .toList();
         }
@@ -43,6 +46,7 @@ public class ProgramadorService {
                 return programadorRepository
                         .findByTrabajadorEstado(Estado.ACTIVO)
                         .stream()
+                        .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getTrabajador().getUsuario()))
                         .map(programadorMapper::toResponse)
                         .toList();
         }
@@ -146,6 +150,7 @@ public class ProgramadorService {
                                 new NoSuchElementException(
                                         "Programador no encontrado"
                                 ));
+            PerfilSuperadmin.proteger(programador.getTrabajador().getUsuario());
 
                 Trabajador trabajador = programador.getTrabajador();
                 Usuario usuario = trabajador.getUsuario();
@@ -231,6 +236,7 @@ public class ProgramadorService {
                                 new NoSuchElementException(
                                         "Programador no encontrado"
                                 ));
+            PerfilSuperadmin.proteger(programador.getTrabajador().getUsuario());
 
                 Trabajador trabajador = programador.getTrabajador();
 

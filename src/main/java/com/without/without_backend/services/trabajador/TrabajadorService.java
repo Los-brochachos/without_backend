@@ -1,5 +1,7 @@
 package com.without.without_backend.services.trabajador;
 
+import com.without.without_backend.utils.PerfilSuperadmin;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -42,6 +44,7 @@ public class TrabajadorService {
         return trabajadorRepository
                 .findAll()
                 .stream()
+                .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getUsuario()))
                 .map(trabajadorMapper::toResponse)
                 .toList();
     }
@@ -51,6 +54,7 @@ public class TrabajadorService {
         return trabajadorRepository
                 .findByEstado(Estado.ACTIVO)
                 .stream()
+                .filter(x -> !PerfilSuperadmin.esSuperadmin(x.getUsuario()))
                 .map(trabajadorMapper::toResponse)
                 .toList();
     }
@@ -117,6 +121,7 @@ public class TrabajadorService {
     public TrabajadorResponse actualizar(Integer id, TrabajadorUpdateRequest request) {
         Trabajador trabajador = trabajadorRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Trabajador no encontrado"));
+        PerfilSuperadmin.proteger(trabajador.getUsuario());
         trabajadorRepository.findByDni(request.dni()).ifPresent(otro -> {
             if (!otro.getIdTrabajador().equals(id)) throw new IllegalArgumentException("El DNI ya está registrado");
         });
@@ -133,6 +138,7 @@ public class TrabajadorService {
     public TrabajadorResponse cambiarActivo(Integer id, boolean activo, String correoActual) {
         Trabajador trabajador = trabajadorRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("Trabajador no encontrado"));
+        PerfilSuperadmin.proteger(trabajador.getUsuario());
         if (!activo && trabajador.getUsuario().getCorreo().equalsIgnoreCase(correoActual)) {
             throw new IllegalArgumentException("No puedes desactivar tu propia cuenta");
         }

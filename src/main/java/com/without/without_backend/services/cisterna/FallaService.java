@@ -15,6 +15,7 @@ import com.without.without_backend.entities.usuario.Usuario;
 import com.without.without_backend.mappers.cisterna.FallaMapper;
 import com.without.without_backend.repositories.cisterna.CisternaRepository;
 import com.without.without_backend.repositories.cisterna.FallaRepository;
+import com.without.without_backend.repositories.cisterna.HistorialMantenimientoRepository;
 import com.without.without_backend.repositories.trabajador.TecnicoRepository;
 import com.without.without_backend.repositories.usuario.UsuarioRepository;
 import com.without.without_backend.utils.cisterna.EstadoFalla;
@@ -31,6 +32,7 @@ public class FallaService {
     private final TecnicoRepository tecnicoRepository;
     private final UsuarioRepository usuarioRepository;
     private final FallaMapper mapper;
+    private final HistorialMantenimientoRepository historialRepository;
 
     public List<FallaResponse> listar() {
         return repository.findAll()
@@ -104,6 +106,14 @@ public class FallaService {
 
             throw new IllegalArgumentException(
                     "El estado de la falla debe avanzar de forma secuencial");
+        }
+
+        // Trazabilidad: una falla solo se cierra si quedó constancia del trabajo realizado.
+        if (nuevoEstado == EstadoFalla.RESUELTA
+                && !historialRepository.existsByFalla_IdFalla(falla.getIdFalla())) {
+
+            throw new IllegalArgumentException(
+                    "Registra el mantenimiento realizado antes de marcar la falla como resuelta");
         }
 
         falla.setEstado(nuevoEstado);
