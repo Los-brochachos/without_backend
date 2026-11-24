@@ -1,0 +1,34 @@
+-------------------------------------------------------------------------------
+Test set: com.without.without_backend.services.pedido.PedidoServiceTest
+-------------------------------------------------------------------------------
+Tests run: 17, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.341 s <<< FAILURE! -- in com.without.without_backend.services.pedido.PedidoServiceTest
+com.without.without_backend.services.pedido.PedidoServiceTest.insertarPedidoCreaDetalleYSeguimiento -- Time elapsed: 0.014 s <<< FAILURE!
+org.opentest4j.MultipleFailuresError: 
+Multiple Failures (1 failure)
+	org.opentest4j.AssertionFailedError: expected: <ACTIVO> but was: <null>
+	at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:80)
+	at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:44)
+	at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:38)
+	at org.junit.jupiter.api.Assertions.assertAll(Assertions.java:3037)
+	at com.without.without_backend.services.pedido.PedidoServiceTest.insertarPedidoCreaDetalleYSeguimiento(PedidoServiceTest.java:77)
+	Suppressed: org.opentest4j.AssertionFailedError: expected: <ACTIVO> but was: <null>
+		at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:158)
+		at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:139)
+		at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:201)
+		at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:184)
+		at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:179)
+		at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1188)
+		at com.without.without_backend.services.pedido.PedidoServiceTest.lambda$insertarPedidoCreaDetalleYSeguimiento$7(PedidoServiceTest.java:84)
+		at org.junit.jupiter.api.AssertAll.lambda$assertAll$0(AssertAll.java:68)
+		at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:214)
+		at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+		at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+		at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+		at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:635)
+		at java.base/java.util.stream.AbstractPipeline.evaluateToArrayNode(AbstractPipeline.java:291)
+		at java.base/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:652)
+		at java.base/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:658)
+		at java.base/java.util.stream.ReferencePipeline.toList(ReferencePipeline.java:663)
+		at org.junit.jupiter.api.AssertAll.assertAll(AssertAll.java:77)
+		... 4 more
+
